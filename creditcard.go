@@ -11,7 +11,6 @@ import (
 func isValid(str string) bool {
 	for i, k := range str {
 		if k == '*' && len(str)-i > 4 || k < 48 && k != '*' || k > 57 && k != '*' || len(str) < 13 || len(str) > 16 {
-
 			return false
 		}
 	}
@@ -65,6 +64,7 @@ func generate(str string, check bool) {
 		}
 	}
 }
+
 func readFfile(fileName string) map[string]string {
 	file, err := os.Open(fileName)
 	Map := make(map[string]string)
@@ -90,7 +90,6 @@ func readFfile(fileName string) map[string]string {
 	}
 
 	return Map
-
 }
 
 func issueCard(brand, issuer string) {
@@ -100,7 +99,6 @@ func issueCard(brand, issuer string) {
 	Mapb := readFfile("brands.txt")
 	for key := range Mapb {
 		if Mapb[key] == brand {
-
 			check = string(key[0])
 		}
 	}
@@ -108,7 +106,6 @@ func issueCard(brand, issuer string) {
 		if Map[key] == issuer && check == string(key[0]) {
 			value = key
 		}
-
 	}
 
 	if len(value) == 0 {
@@ -122,14 +119,21 @@ func issueCard(brand, issuer string) {
 			return
 		}
 	}
-
 }
 
 func main() {
 	input := os.Args[1:]
 
+	if len(input) < 2 {
+		os.Exit(1)
+	}
 	scanner := bufio.NewScanner(os.Stdin)
-	if input[1] == "--stdin" {
+
+	if input[1] == "--stdin" { // validate --stdin not working
+
+		if len(input) != 2 {
+			os.Exit(1)
+		}
 		for scanner.Scan() {
 			input[1] = ""
 			var temp string
@@ -137,7 +141,6 @@ func main() {
 			for i, k := range scanner.Text() {
 				if k != ' ' {
 					temp += string(k)
-
 				}
 				if k == ' ' || len(scanner.Text())-1 == i {
 					input = append(input, temp)
@@ -148,18 +151,15 @@ func main() {
 		}
 
 	}
-
-	if input[0] == "validate" {
+	if input[0] == "validate" && isValid(input[1]) || input[0] == "validate" && input[1] == "--stdin" {
 		for _, k := range input[1:] {
 			if isValid(k) && calculate(k) && k != "" {
 				fmt.Println("OK")
-
 			} else if k != "" {
 				fmt.Println("INCORRECT")
-
 			}
 		}
-	} else if input[0] == "generate" && input[1] == "--pick" && isValid(input[2]) && len(input) < 4 {
+	} else if len(input) < 4 && input[0] == "generate" && input[1] == "--pick" && isValid(input[2]) {
 		generate(input[2], false)
 	} else if input[0] == "generate" && len(input) < 3 {
 		for _, k := range input[1:] {
@@ -191,11 +191,11 @@ func main() {
 
 			}
 		}
-	} else if input[0] == "issue" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" {
+	} else if input[0] == "issue" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" && len(input) == 5 {
 		brand := input[3]
 		issuer := input[4]
 
-		if len(input) == 5 && len(brand) >= 12 && len(issuer) >= 18 {
+		if len(brand) >= 12 && len(issuer) >= 18 {
 			issueCard(brand[8:], issuer[9:])
 		} else {
 			os.Exit(1)
