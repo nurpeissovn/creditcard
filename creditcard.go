@@ -21,6 +21,9 @@ func isValid(str string) bool {
 				}
 			}
 		}
+		if str[:2] == "34" && len(str) != 15 || str[:2] == "37" && len(str) != 15 {
+			return false
+		}
 
 	}
 	return true
@@ -232,7 +235,7 @@ func main() {
 		brand := input[3]
 		issuer := input[4]
 
-		if len(brand) >= 12 && len(issuer) >= 18 {
+		if len(brand) >= 12 && len(issuer) >= 13 {
 			issueCard(brand[8:], issuer[9:])
 		} else {
 			os.Exit(1)
