@@ -9,10 +9,19 @@ import (
 )
 
 func isValid(str string) bool {
+
 	for i, k := range str {
 		if k == '*' && len(str)-i > 4 || k < 48 && k != '*' || k > 57 && k != '*' || len(str) < 13 || len(str) > 16 {
 			return false
 		}
+		if k == '*' {
+			for _, l := range str[i:] {
+				if l != '*' {
+					return false
+				}
+			}
+		}
+
 	}
 	return true
 }
@@ -20,8 +29,10 @@ func isValid(str string) bool {
 func calculate(str string) bool {
 	res := 0
 	for i, k := range str {
-		x, _ := strconv.Atoi(string(k))
-
+		x, err := strconv.Atoi(string(k))
+		if err != nil {
+			return false
+		}
 		if i%2 == 0 {
 			x *= 2
 			if x > 9 {
@@ -35,7 +46,6 @@ func calculate(str string) bool {
 			res += x
 		}
 	}
-
 	return res%10 == 0
 }
 
@@ -50,6 +60,9 @@ func generate(str string, check bool) {
 		} else {
 			res += string(k)
 		}
+	}
+	if san == 0 {
+		os.Exit(1)
 	}
 
 	for i := 0; i < pow; i++ {
@@ -121,42 +134,50 @@ func issueCard(brand, issuer string) {
 	}
 }
 
-func main() {
-	input := os.Args[1:]
+func stdInput(check bool) []string {
 	scanner := bufio.NewScanner(os.Stdin)
 	file, _ := os.Stdin.Stat()
-	if len(input) < 2 || input[0] == "information" && len(input) < 4 || (file.Mode()&os.ModeCharDevice) == 0 && input[3] != "--stdin" {
+	var input []string = []string{"", ""}
+	if (file.Mode() & os.ModeCharDevice) != 0 {
+		os.Exit(1)
+	}
+	if check {
+		input = append(input, "")
+	}
+	for scanner.Scan() {
+
+		var temp string
+
+		for i, k := range scanner.Text() {
+			if k != ' ' {
+				temp += string(k)
+			}
+			if k == ' ' || len(scanner.Text())-1 == i {
+				input = append(input, temp)
+
+				temp = ""
+			}
+		}
+	}
+	return input
+}
+
+func main() {
+	input := os.Args[1:]
+
+	if len(input) < 2 || input[0] == "information" && len(input) < 4 {
 		os.Exit(1)
 	}
 
-	if input[1] == "--stdin" || input[0] == "information" && input[3] == "--stdin" {
-
-		if (file.Mode()&os.ModeCharDevice) != 0 || input[len(input)-1] != "--stdin" {
-			os.Exit(1)
-		}
-		for scanner.Scan() {
-			if input[3] == "--stdin" {
-				input[1] = "--brands=brands.txt"
-				input = input[0:3]
-			} else {
-				input[1] = ""
-			}
-			var temp string
-
-			for i, k := range scanner.Text() {
-				if k != ' ' {
-					temp += string(k)
-				}
-				if k == ' ' || len(scanner.Text())-1 == i {
-					input = append(input, temp)
-
-					temp = ""
-				}
-			}
-		}
-
-	}
 	if input[0] == "validate" && isValid(input[1]) || input[0] == "validate" && input[1] == "--stdin" {
+
+		if input[1] == "--stdin" {
+			if len(input) > 2 {
+				os.Exit(1)
+			}
+			input = stdInput(false)
+		}
+
 		for _, k := range input[1:] {
 			if isValid(k) && calculate(k) && k != "" {
 				fmt.Println("OK")
@@ -174,14 +195,24 @@ func main() {
 			} else {
 				os.Exit(1)
 			}
+
 		}
 	} else if input[0] == "information" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" {
+
+		if input[3] == "--stdin" {
+			if len(input) > 4 {
+				os.Exit(1)
+			}
+			input = stdInput(true)
+		} else if file, _ := os.Stdin.Stat(); (file.Mode()&os.ModeCharDevice) == 0 && input[3] != "--stdin" {
+			os.Exit(1)
+		}
 		fin := 2
 		for _, k := range input[3:] {
 			if k[0] == '4' {
 				fin = 1
 			}
-			if isValid(k) && calculate(k) {
+			if isValid(k) && calculate(k) && k != "" {
 				bName := readFile("brands.txt")
 				issuerNmae := readFile("issuers.txt")
 				fmt.Println(k)
