@@ -65,7 +65,7 @@ func generate(str string, check bool) {
 	}
 }
 
-func readFfile(fileName string) map[string]string {
+func readFile(fileName string) map[string]string {
 	file, err := os.Open(fileName)
 	Map := make(map[string]string)
 	brandName := ""
@@ -95,8 +95,8 @@ func readFfile(fileName string) map[string]string {
 func issueCard(brand, issuer string) {
 	value := ""
 	check := ""
-	Map := readFfile("issuers.txt")
-	Mapb := readFfile("brands.txt")
+	Map := readFile("issuers.txt")
+	Mapb := readFile("brands.txt")
 	for key := range Mapb {
 		if Mapb[key] == brand {
 			check = string(key[0])
@@ -123,19 +123,24 @@ func issueCard(brand, issuer string) {
 
 func main() {
 	input := os.Args[1:]
-
-	if len(input) < 2 {
+	scanner := bufio.NewScanner(os.Stdin)
+	file, _ := os.Stdin.Stat()
+	if len(input) < 2 || input[0] == "information" && len(input) < 4 || (file.Mode()&os.ModeCharDevice) == 0 && input[3] != "--stdin" {
 		os.Exit(1)
 	}
-	scanner := bufio.NewScanner(os.Stdin)
 
-	if input[1] == "--stdin" { // validate --stdin not working
+	if input[1] == "--stdin" || input[0] == "information" && input[3] == "--stdin" {
 
-		if len(input) != 2 {
+		if (file.Mode()&os.ModeCharDevice) != 0 || input[len(input)-1] != "--stdin" {
 			os.Exit(1)
 		}
 		for scanner.Scan() {
-			input[1] = ""
+			if input[3] == "--stdin" {
+				input[1] = "--brands=brands.txt"
+				input = input[0:3]
+			} else {
+				input[1] = ""
+			}
 			var temp string
 
 			for i, k := range scanner.Text() {
@@ -157,9 +162,10 @@ func main() {
 				fmt.Println("OK")
 			} else if k != "" {
 				fmt.Println("INCORRECT")
+				os.Exit(1)
 			}
 		}
-	} else if len(input) < 4 && input[0] == "generate" && input[1] == "--pick" && isValid(input[2]) {
+	} else if len(input) < 4 && len(input) > 2 && input[0] == "generate" && input[1] == "--pick" && isValid(input[2]) {
 		generate(input[2], false)
 	} else if input[0] == "generate" && len(input) < 3 {
 		for _, k := range input[1:] {
@@ -176,8 +182,8 @@ func main() {
 				fin = 1
 			}
 			if isValid(k) && calculate(k) {
-				bName := readFfile("brands.txt")
-				issuerNmae := readFfile("issuers.txt")
+				bName := readFile("brands.txt")
+				issuerNmae := readFile("issuers.txt")
 				fmt.Println(k)
 				fmt.Println("Correct: " + "yes")
 				fmt.Println("Card Brand: " + bName[k[:fin]])
