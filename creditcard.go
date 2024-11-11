@@ -9,7 +9,6 @@ import (
 )
 
 func isValid(str string) bool {
-
 	for i, k := range str {
 		if k == '*' && len(str)-i > 4 || k < 48 && k != '*' || k > 57 && k != '*' || len(str) < 13 || len(str) > 16 {
 			return false
@@ -198,7 +197,6 @@ func main() {
 			} else {
 				os.Exit(1)
 			}
-
 		}
 	} else if input[0] == "information" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" {
 
