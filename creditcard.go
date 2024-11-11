@@ -198,7 +198,7 @@ func main() {
 				os.Exit(1)
 			}
 		}
-	} else if input[0] == "information" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" {
+	} else if input[0] == "information" && input[1] == "--brands=brands.txt" && input[2] == "--issuers=issuers.txt" && len(input) > 3 {
 
 		if input[3] == "--stdin" {
 			if len(input) > 4 {
