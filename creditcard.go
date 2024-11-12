@@ -233,7 +233,7 @@ func main() {
 		brand := input[3]
 		issuer := input[4]
 
-		if len(brand) >= 12 && len(issuer) >= 13 {
+		if len(brand) >= 9 && len(issuer) >= 10 {
 			issueCard(brand[8:], issuer[9:])
 		} else {
 			os.Exit(1)
