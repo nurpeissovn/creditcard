@@ -1,0 +1,46 @@
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	f, _ := os.Open("sample.bmp")
+	buf := make([]byte, 54)
+	f.Read(buf)
+	fmt.Println(buf)
+	height := 360
+	width := 480
+	image := make([][][3]byte, 360)
+	for i := 0; i < height; i++ {
+		k := 0
+		jolag := make([]byte, width*3)
+		f.Read(jolag)
+		image[i] = make([][3]byte, width)
+		for j := 0; j < len(jolag); j += 3 {
+			image[i][k][0] = jolag[j]
+			image[i][k][1] = jolag[j+1]
+			image[i][k][2] = jolag[j+2]
+			k++
+		}
+	}
+	for i, j := 0, height-1; i < height/2; i, j = i+1, j-1 {
+		image[i], image[j] = image[j], image[i]
+	}
+
+	f2, _ := os.Create("sample2.bmp")
+	f2.Write(buf)
+	for i := range image {
+		for j := range image[i] {
+			f2.Write(image[i][j][:])
+		}
+	}
+	fmt.Println((4 - (364 % 4)) % 4)
+	// fmt.Println(image)
+}
+
+// 2 BYTE BM
+// 4 BYTE b1+b2*2^8+b3*2^16+b4*2^24
+// 4byte reserv
+// 4byte b1+b2*2^8... 54byte minimun
