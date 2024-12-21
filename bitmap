@@ -147,3 +147,30 @@ func main() {
 
 	// func block() {
 }
+
+
+
+
+
+rotated := make([][][3]byte, len(raw[0]))
+	for i := range rotated {
+		rotated[i] = make([][3]byte, len(raw))
+	}
+	for i := range rotated {
+		for j := range rotated[i] {
+			rotated[i][j] = raw[j][i]
+		}
+	}
+	raw = rotated
+
+	binary.LittleEndian.PutUint32(header[18:22], uint32(len(raw[0])))
+
+	binary.LittleEndian.PutUint32(header[22:26], uint32(len(raw)))
+
+	res, _ := os.Create("koreik.bmp")
+	res.Write(header)
+	for i := range raw {
+		for j := range raw[i] {
+			res.Write(raw[i][j][:])
+		}
+	}
